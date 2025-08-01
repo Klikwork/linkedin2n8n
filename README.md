@@ -34,7 +34,7 @@ A powerful Chrome extension that extracts LinkedIn profile data and sends it to 
 1. **Click the Extension icon → Settings (or right-click → Options)**
 2. **Paste your n8n Webhook URL**
    - Example: `https://your-n8n-instance.com/webhook/linkedin2n8n`
-3. (Optional) Click “Send Test” to check connectivity
+3. (Optional) Click "Save" and “Send Test” to check connectivity
 4. Done!
 
 No need to modify files or environment variables.
