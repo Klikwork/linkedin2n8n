@@ -1,0 +1,64 @@
+{
+  "manifest_version": 3,
+  "name": "LinkedIn to n8n",
+  "version": "1.0.0",
+  "description": "Seamlessly extract LinkedIn profile data and send it to your n8n webhook. Perfect for recruitment/sales teams and business development.",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": [
+    "*://www.linkedin.com/*",
+    "*://linkedin.com/*"
+  ],
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_title": "LinkedIn2n8n"
+  },
+  "background": {
+    "service_worker": "src/background/background.js"
+  },
+  "options_ui": {
+    "page": "src/options/options.html",
+    "open_in_tab": true
+  },
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "32": "assets/icons/icon32.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://www.linkedin.com/sales/lead/*",
+        "*://www.linkedin.com/sales/people/*",
+        "*://linkedin.com/sales/lead/*",
+        "*://linkedin.com/sales/people/*"
+      ],
+      "js": ["src/content-scripts/content-sales.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": [
+        "*://www.linkedin.com/in/*",
+        "*://linkedin.com/in/*"
+      ],
+      "js": ["src/content-scripts/content-normal.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/popup/popup.html",
+        "src/popup/popup.css",
+        "src/popup/popup.js",
+        "src/config/config.js",
+        "src/content-scripts/content-sales.js",
+        "src/content-scripts/content-normal.js",
+        "src/options/options.html",
+        "src/options/options.css",
+        "src/options/options.js"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

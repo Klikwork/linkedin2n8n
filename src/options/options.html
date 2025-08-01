@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings - LinkedIn2n8n</title>
+  <link rel="stylesheet" href="options.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body>
+  <div class="container">
+    
+    <div class="header">
+      <h1><i class="fab fa-linkedin"></i> LinkedIn2n8n Settings</h1>
+      <div class="subtitle">Configure your n8n webhook connection</div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-group">
+        <label for="webhookUrl">
+          <i class="fas fa-link"></i>
+          n8n Webhook URL
+        </label>
+        <input type="text" id="webhookUrl" placeholder="Paste your n8n webhook URL here" />
+        <button id="saveBtn">
+          <i class="fas fa-save"></i>
+          Save
+        </button>
+        <span id="saveStatus"></span>
+      </div>
+
+      <hr />
+
+      <div class="form-group">
+        <button id="testBtn">
+          <i class="fas fa-paper-plane"></i>
+          Send test data
+        </button>
+        <button id="clearBtn">
+          <i class="fas fa-trash"></i>
+          Clear all settings
+        </button>
+      </div>
+
+      <hr />
+
+      <div class="info-section">
+        <h3><i class="fas fa-shield-alt"></i> How We Protect Your Data</h3>
+        <ul>
+          <li>Your webhook URL is stored locally in your browser</li>
+          <li>No profile data is stored permanently</li>
+          <li>Data is sent directly from your browser to your n8n instance</li>
+          <li>We never see or store your webhook URL or profile data</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer">
+      Made with <span class="heart">❤️</span> for better n8n workflows
+    </div>
+
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
