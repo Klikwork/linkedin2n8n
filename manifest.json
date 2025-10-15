@@ -3,7 +3,7 @@
   "name": "LinkedIn to n8n",
   "version": "1.0.0",
   "description": "Seamlessly extract LinkedIn profile data and send it to your n8n webhook. Perfect for recruitment/sales teams.",
-  "permissions": ["activeTab", "scripting", "storage"],
+  "permissions": ["activeTab", "storage"],
   "host_permissions": [
     "*://www.linkedin.com/*",
     "*://linkedin.com/*"
@@ -62,4 +62,5 @@
     }
   ]
 }
+
 
