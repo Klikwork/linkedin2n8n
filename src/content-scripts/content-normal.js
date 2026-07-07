@@ -348,8 +348,10 @@ function extractCompleteProfileData(request){
     console.log("Extracting complete profile data from normal LinkedIn page");
 
     // Extract basic profile information
-    const nameElement = document.querySelector('main h1') || document.querySelector('h1');
-    const personName = nameElement ? nameElement.innerText.trim() : '';
+    const nameElement = document.querySelector('main h1') || queryDeep('main h1') || queryDeep('h1');
+    const personName = (nameElement ? nameElement.innerText.trim() : '') ||
+                       (extractJsonLdPerson()?.name || '').trim() ||
+                       extractNameFromTitle();
 
     // Extract about section
     const personBlurb = extractAboutText();
@@ -384,6 +386,117 @@ function extractCompleteProfileData(request){
     console.error('Error in extractCompleteProfileData:', error);
     throw error;
   }
+}
+
+/**
+ * Queries across open shadow roots as well as the regular DOM, in case
+ * LinkedIn renders parts of the page inside web components
+ * @param {string} selector - CSS selector
+ * @returns {Element|null} First match in document or any open shadow root
+ */
+function queryDeep(selector) {
+  const direct = document.querySelector(selector);
+  if (direct) return direct;
+
+  const search = (root) => {
+    for (const el of root.querySelectorAll('*')) {
+      if (el.shadowRoot) {
+        const found = el.shadowRoot.querySelector(selector) || search(el.shadowRoot);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+  return search(document);
+}
+
+/**
+ * Extracts the person's name from the document title as a layout-independent
+ * fallback. Titles look like "Jane Doe | LinkedIn" or "(3) Jane Doe | LinkedIn".
+ * @returns {string} Name, or empty string
+ */
+function extractNameFromTitle() {
+  const title = (document.title || '').replace(/^\(\d+\)\s*/, '');
+  const name = title.split('|')[0].trim();
+  return /linkedin/i.test(name) ? '' : name;
+}
+
+/**
+ * Extracts schema.org Person data from JSON-LD script tags when present
+ * @returns {Object|null} Person object, or null
+ */
+function extractJsonLdPerson() {
+  try {
+    for (const script of document.querySelectorAll('script[type="application/ld+json"]')) {
+      const data = JSON.parse(script.textContent);
+      const graph = data['@graph'] || [data];
+      const person = graph.find(item => item && item['@type'] === 'Person');
+      if (person) return person;
+    }
+  } catch (e) {
+    console.warn('Error parsing JSON-LD:', e);
+  }
+  return null;
+}
+
+/**
+ * Last-resort extraction: the readable text of the profile page. LinkedIn
+ * renders every string twice (aria-hidden + visually-hidden), so consecutive
+ * duplicate lines are collapsed.
+ * @returns {string} Cleaned page text, capped at 15k characters
+ */
+function extractRawProfileText() {
+  const main = document.querySelector('main') || queryDeep('main') || document.body;
+  const lines = (main.innerText || '').split('\n').map(line => line.trim()).filter(Boolean);
+  const deduped = lines.filter((line, i) => line !== lines[i - 1]);
+  return deduped.join('\n').slice(0, 15000);
+}
+
+/**
+ * Builds a compact description of the page structure for bug reports when
+ * extraction fails. Contains no profile text — only tag/attribute statistics.
+ * @returns {Object} Diagnostics object
+ */
+function buildDomDiagnostics() {
+  const anchorState = {};
+  ['about', 'experience', 'education'].forEach(id => {
+    anchorState[id] = document.getElementById(id) ? 'present' :
+      (queryDeep('[id="' + id + '"]') ? 'in-shadow-dom' : 'missing');
+  });
+
+  const dataViewNames = {};
+  document.querySelectorAll('[data-view-name]').forEach(el => {
+    const value = el.getAttribute('data-view-name');
+    dataViewNames[value] = (dataViewNames[value] || 0) + 1;
+  });
+
+  let shadowHosts = 0;
+  document.querySelectorAll('*').forEach(el => { if (el.shadowRoot) shadowHosts++; });
+
+  return {
+    extensionVersion: chrome.runtime?.getManifest?.().version,
+    url: window.location.href,
+    h1Count: document.querySelectorAll('h1').length,
+    mainPresent: !!document.querySelector('main'),
+    sectionCount: document.querySelectorAll('section').length,
+    shadowHosts,
+    anchors: anchorState,
+    dataViewNames
+  };
+}
+
+/**
+ * Scrolls through the page once to force LinkedIn to render lazy sections,
+ * then restores the scroll position
+ */
+async function autoScrollPage() {
+  const originalScrollY = window.scrollY;
+  const height = Math.max(document.body.scrollHeight, 3000);
+  for (let y = 0; y <= height; y += Math.ceil(height / 4)) {
+    window.scrollTo(0, y);
+    await new Promise(resolve => setTimeout(resolve, 300));
+  }
+  window.scrollTo(0, originalScrollY);
 }
 
 /**
@@ -447,12 +560,44 @@ if (!window.__linkedin2n8nNormalLoaded) {
           return;
         }
 
-        if (!profileData.personName && profileData.experience.length === 0) {
-          sendResponse({
-            success: false,
-            message: 'Could not read any profile data from this page. Scroll through the profile so all sections load, then try again. If it keeps failing, LinkedIn may have changed its layout — please report it.'
-          });
-          return;
+        // Structured extraction failed → scroll through the page to force
+        // lazy rendering and try once more
+        if (profileData.experience.length === 0) {
+          console.warn('LinkedIn2n8n: no experience entries found, auto-scrolling and retrying...');
+          await autoScrollPage();
+          profileData = extractCompleteProfileData(request);
+        }
+
+        // Still nothing structured → fall back to raw page text so the n8n
+        // workflow keeps receiving data, and log diagnostics for a bug report
+        if (profileData.experience.length === 0) {
+          const diagnostics = buildDomDiagnostics();
+          console.warn('LinkedIn2n8n diagnostics (copy this into a bug report):', JSON.stringify(diagnostics, null, 2));
+
+          profileData.profileText = extractRawProfileText();
+
+          const jsonLdPerson = extractJsonLdPerson();
+          if (jsonLdPerson) {
+            if (!profileData.job && jsonLdPerson.jobTitle) {
+              profileData.job = Array.isArray(jsonLdPerson.jobTitle) ? jsonLdPerson.jobTitle[0] : jsonLdPerson.jobTitle;
+            }
+            const worksFor = jsonLdPerson.worksFor;
+            const worksForName = Array.isArray(worksFor) ? worksFor[0]?.name : worksFor?.name;
+            if (!profileData.company && worksForName) {
+              profileData.company = worksForName;
+            }
+            if (!profileData.personBlurb && jsonLdPerson.description) {
+              profileData.personBlurb = jsonLdPerson.description;
+            }
+          }
+
+          if (!profileData.personName && !profileData.profileText) {
+            sendResponse({
+              success: false,
+              message: 'Could not read any profile data from this page. Press F12, open the Console tab, and copy the "LinkedIn2n8n diagnostics" message into a bug report so this can be fixed.'
+            });
+            return;
+          }
         }
 
         console.log("Forwarding profile data to background script for n8n webhook processing");
@@ -471,7 +616,10 @@ if (!window.__linkedin2n8nNormalLoaded) {
           } else {
             console.log('Background script response:', response);
             if (response && response.success && profileData.experience.length === 0) {
-              response.message = (response.message || 'Sent') + ' — note: the experience section could not be read on this page.';
+              response.message = (response.message || 'Sent') +
+                (profileData.profileText
+                  ? ' — structured parsing failed, sent raw profile text instead (see DevTools console for diagnostics).'
+                  : ' — note: the experience section could not be read on this page.');
             }
             sendResponse(response);
           }
