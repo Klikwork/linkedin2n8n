@@ -1,0 +1,52 @@
+{
+  "personName": "Dick Example",
+  "personBlurb": "Ik geloof dat werk leuker wordt als het bijdraagt aan iets dat ertoe doet.\nNa 17 jaar in recruitment en HR weet ik hoe belangrijk het is om mensen te verbinden met werk dat klopt.",
+  "experience": [
+    {
+      "company": "Sunny Side Corp",
+      "positions": [
+        {
+          "title": "Talent Partner",
+          "employmentType": "Full-time",
+          "duration": "Jan 2022 - Present · 4 yrs 7 mos",
+          "location": "Haarlem, North Holland, Netherlands",
+          "description": "Recruitment & Executive Search voor Tech & SaaS scale-ups met een missie die er toe doet."
+        }
+      ]
+    },
+    {
+      "company": "TwoBirds",
+      "positions": [
+        {
+          "title": "People Partner",
+          "employmentType": "Freelance",
+          "duration": "Dec 2022 - Present · 3 yrs 8 mos"
+        }
+      ]
+    },
+    {
+      "company": "STYR",
+      "positions": [
+        {
+          "title": "Consultant",
+          "employmentType": "Freelance",
+          "duration": "Feb 2023 - Sep 2024 · 1 yr 8 mos",
+          "location": "Netherlands"
+        }
+      ]
+    }
+  ],
+  "education": [
+    {
+      "university": "The School of Life Amsterdam",
+      "subject": "De kracht van positieve psychologie"
+    },
+    {
+      "university": "Artec Neval (AN-i)",
+      "subject": "Specialist Arbeidsrecht & Strategisch Arbeidsrecht"
+    }
+  ],
+  "company": "Sunny Side Corp",
+  "job": "Talent Partner",
+  "linkedinUrl": "https://www.linkedin.com/in/test-profile/"
+}

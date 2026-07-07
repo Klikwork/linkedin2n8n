@@ -347,18 +347,30 @@ function extractCompleteProfileData(request){
   try {
     console.log("Extracting complete profile data from normal LinkedIn page");
 
+    // Extract about section
+    let personBlurb = extractAboutText();
+
+    // Extract structured data
+    let experienceData = extractExperienceData();
+    let educationData = extractEducationData();
+
+    // The DOM offered no usable landmarks (anchor ids / entity markers) —
+    // fall back to parsing the page's readable text line by line
+    let textProfile = null;
+    if (!experienceData.length) {
+      console.warn('LinkedIn to n8n: DOM extraction found no experience, falling back to text parsing');
+      textProfile = parseProfileFromMainText();
+      if (textProfile.experience.length) experienceData = textProfile.experience;
+      if (!educationData.length && textProfile.education.length) educationData = textProfile.education;
+      if (!personBlurb && textProfile.about) personBlurb = textProfile.about;
+    }
+
     // Extract basic profile information
     const nameElement = document.querySelector('main h1') || queryDeep('main h1') || queryDeep('h1');
     const personName = (nameElement ? nameElement.innerText.trim() : '') ||
                        (extractJsonLdPerson()?.name || '').trim() ||
-                       extractNameFromTitle();
-
-    // Extract about section
-    const personBlurb = extractAboutText();
-
-    // Extract structured data
-    const experienceData = extractExperienceData();
-    const educationData = extractEducationData();
+                       extractNameFromTitle() ||
+                       (textProfile ? textProfile.firstLine : '');
 
     console.log('Extracted experience data:', experienceData);
     console.log('Extracted education data:', educationData);
@@ -440,16 +452,194 @@ function extractJsonLdPerson() {
 }
 
 /**
- * Last-resort extraction: the readable text of the profile page. LinkedIn
- * renders every string twice (aria-hidden + visually-hidden), so consecutive
+ * Returns the readable text of the profile page as cleaned lines. LinkedIn
+ * renders strings twice (aria-hidden + visually-hidden), so consecutive
  * duplicate lines are collapsed.
+ * @returns {string[]} Trimmed, non-empty, deduplicated text lines
+ */
+function getMainTextLines() {
+  const main = document.querySelector('main') || queryDeep('main') || document.body;
+  const lines = [];
+  for (const raw of (main.innerText || '').split('\n')) {
+    const line = raw.replace(/[\u200b\u200e\u200f]/g, '').trim();
+    if (!line) continue;
+    if (line === lines[lines.length - 1]) continue;
+    lines.push(line);
+  }
+  return lines;
+}
+
+/**
+ * Last-resort extraction: the readable text of the profile page
  * @returns {string} Cleaned page text, capped at 15k characters
  */
 function extractRawProfileText() {
-  const main = document.querySelector('main') || queryDeep('main') || document.body;
-  const lines = (main.innerText || '').split('\n').map(line => line.trim()).filter(Boolean);
-  const deduped = lines.filter((line, i) => line !== lines[i - 1]);
-  return deduped.join('\n').slice(0, 15000);
+  return getMainTextLines().join('\n').slice(0, 15000);
+}
+
+// Section heading names (English + Dutch) used to split the page text into
+// sections when the DOM offers no usable landmarks
+var TEXT_SECTION_HEADINGS = [
+  'about', 'over', 'info',
+  'activity', 'activiteit',
+  'experience', 'ervaring',
+  'education', 'opleiding', 'opleidingen',
+  'licenses & certifications', 'licenties en certificaten',
+  'skills', 'vaardigheden',
+  'recommendations', 'aanbevelingen',
+  'interests', 'interesses',
+  'publications', 'publicaties',
+  'projects', 'projecten',
+  'volunteer experience', 'vrijwilligerservaring',
+  'courses', 'cursussen',
+  'honors & awards', 'prijzen en onderscheidingen',
+  'languages', 'talen',
+  'featured', 'uitgelicht',
+  'sales insights', 'key signals',
+  'more profiles for you', 'meer profielen voor jou',
+  'people you may know', 'mensen die je mogelijk kent',
+  'explore premium profiles'
+];
+
+// UI chrome that appears between data lines and must be ignored
+var TEXT_NOISE_PATTERNS = [
+  /^show all/i, /^toon alle/i,
+  /^…\s*more$/i, /^…?\s*see more$/i, /^meer weergeven$/i,
+  /^message$/i, /^bericht$/i, /^connect$/i, /^follow(ing)?$/i, /^volgen$/i,
+  /^endorse$/i, /^onderschrijven$/i, /^view job$/i,
+  /^visit my website$/i, /^contact info$/i, /^contactgegevens$/i,
+  /^book an appointment$/i, /^view in recruiter$/i,
+  /^[·•]\s*(1st|2nd|3rd\+?|1e|2e|3e\+?)$/i,
+  /^\d+$/, /^[·•]$/
+];
+
+function isTextSectionHeading(line) {
+  return TEXT_SECTION_HEADINGS.indexOf(line.toLowerCase()) !== -1;
+}
+
+function isTextNoiseLine(line) {
+  return TEXT_NOISE_PATTERNS.some(pattern => pattern.test(line));
+}
+
+/**
+ * Returns the cleaned lines of one named section of the page text
+ * @param {string[]} lines - Full page text lines
+ * @param {string[]} headingNames - Lowercase heading variants of the section
+ * @returns {string[]} Lines between this heading and the next known heading
+ */
+function getTextSection(lines, headingNames) {
+  const start = lines.findIndex(line => headingNames.indexOf(line.toLowerCase()) !== -1);
+  if (start === -1) return [];
+
+  const sectionLines = [];
+  for (let i = start + 1; i < lines.length; i++) {
+    if (isTextSectionHeading(lines[i])) break;
+    if (!isTextNoiseLine(lines[i])) sectionLines.push(lines[i]);
+  }
+  return sectionLines;
+}
+
+function looksLikeLocation(line) {
+  return line.length <= 70 &&
+         !looksLikeDateRange(line) &&
+         (/,/.test(line) || /(remote|hybrid|on-site|area|netherlands|nederland)/i.test(line));
+}
+
+/**
+ * Parses experience entries from section text lines. Entries follow the
+ * pattern: title / "Company · EmploymentType" / date range / [location] /
+ * [description...]. Date-range lines anchor the entry boundaries.
+ * @param {string[]} sectionLines - Experience section lines
+ * @returns {Array} Experience entries in the same shape as the DOM parser
+ */
+function parseExperienceFromLines(sectionLines) {
+  const entries = [];
+  const dateIndexes = [];
+  sectionLines.forEach((line, i) => { if (looksLikeDateRange(line)) dateIndexes.push(i); });
+
+  dateIndexes.forEach((d, k) => {
+    const prevDate = k > 0 ? dateIndexes[k - 1] : -1;
+    const nextStart = k + 1 < dateIndexes.length ?
+      Math.max(dateIndexes[k + 1] - 2, d + 1) : sectionLines.length;
+
+    const entry = {};
+    const position = {};
+
+    if (d - 2 > prevDate) {
+      position.title = sectionLines[d - 2];
+      const parts = sectionLines[d - 1].split('·').map(part => part.trim()).filter(Boolean);
+      if (parts.length >= 2) {
+        entry.company = parts[0];
+        position.employmentType = parts[1];
+      } else if (parts[0]) {
+        entry.company = parts[0];
+      }
+    } else if (d - 1 > prevDate) {
+      position.title = sectionLines[d - 1];
+    }
+
+    position.duration = sectionLines[d];
+
+    const tail = sectionLines.slice(d + 1, nextStart);
+    if (tail.length && looksLikeLocation(tail[0])) position.location = tail.shift();
+    if (tail.length) position.description = tail.join('\n');
+
+    if (position.title || entry.company) {
+      entry.positions = [position];
+      entries.push(entry);
+    }
+  });
+
+  return entries;
+}
+
+/**
+ * Parses education entries from section text lines. Entries follow the
+ * pattern: university / subject / [date range].
+ * @param {string[]} sectionLines - Education section lines
+ * @returns {Array} Education entries in the same shape as the DOM parser
+ */
+function parseEducationFromLines(sectionLines) {
+  const dateIndexes = [];
+  sectionLines.forEach((line, i) => { if (looksLikeDateRange(line)) dateIndexes.push(i); });
+
+  if (!dateIndexes.length) {
+    if (sectionLines.length >= 1 && sectionLines.length <= 3) {
+      const entry = { university: sectionLines[0] };
+      if (sectionLines[1]) entry.subject = sectionLines[1];
+      return [entry];
+    }
+    return [];
+  }
+
+  const entries = [];
+  dateIndexes.forEach((d, k) => {
+    const prevDate = k > 0 ? dateIndexes[k - 1] : -1;
+    const entry = {};
+    if (d - 2 > prevDate) {
+      entry.university = sectionLines[d - 2];
+      entry.subject = sectionLines[d - 1];
+    } else if (d - 1 > prevDate) {
+      entry.university = sectionLines[d - 1];
+    }
+    if (entry.university) entries.push(entry);
+  });
+  return entries;
+}
+
+/**
+ * Layout-independent extraction from the page's readable text. Used when the
+ * DOM offers none of the landmarks the structured parser needs.
+ * @returns {Object} { experience, education, about, firstLine }
+ */
+function parseProfileFromMainText() {
+  const lines = getMainTextLines();
+  return {
+    experience: parseExperienceFromLines(getTextSection(lines, ['experience', 'ervaring'])),
+    education: parseEducationFromLines(getTextSection(lines, ['education', 'opleiding', 'opleidingen'])),
+    about: getTextSection(lines, ['about', 'over', 'info']).join('\n'),
+    firstLine: lines[0] || ''
+  };
 }
 
 /**
