@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "LinkedIn to n8n",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Seamlessly extract LinkedIn profile data and send it to your n8n webhook. Perfect for recruitment/sales teams.",
-  "permissions": ["activeTab", "storage"],
+  "permissions": ["activeTab", "storage", "scripting"],
   "host_permissions": [
     "*://www.linkedin.com/*",
     "*://linkedin.com/*"

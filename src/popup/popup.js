@@ -112,6 +112,44 @@ class LinkedInToN8nPopup {
     }
 
     /**
+     * Checks whether a content script is alive in the given tab
+     * @param {number} tabId - The tab to ping
+     * @returns {Promise<boolean>} Whether the content script responded
+     */
+    pingContentScript(tabId) {
+        return new Promise((resolve) => {
+            chrome.tabs.sendMessage(tabId, { action: 'ping' }, (response) => {
+                resolve(!chrome.runtime.lastError && !!response);
+            });
+        });
+    }
+
+    /**
+     * Makes sure the right content script is loaded in the tab.
+     * LinkedIn is a single-page app: when the user navigates from e.g. the feed
+     * to a profile, declared content scripts are never injected (no page load).
+     * If the ping fails, inject the script on demand.
+     * @param {Object} activeTab - The active browser tab
+     */
+    async ensureContentScriptLoaded(activeTab) {
+        if (await this.pingContentScript(activeTab.id)) return;
+
+        const scriptFile = activeTab.url.includes('/sales/')
+            ? 'src/content-scripts/content-sales.js'
+            : 'src/content-scripts/content-normal.js';
+
+        console.log('Content script not loaded, injecting:', scriptFile);
+        await chrome.scripting.executeScript({
+            target: { tabId: activeTab.id },
+            files: [scriptFile]
+        });
+
+        if (!(await this.pingContentScript(activeTab.id))) {
+            throw new Error('Could not load the extension on this page. Please refresh the LinkedIn tab and try again.');
+        }
+    }
+
+    /**
      * Sends message to content script and handles response
      * @param {Object} activeTab - The active browser tab
      * @param {string} action - Action to send to content script
@@ -166,6 +204,9 @@ class LinkedInToN8nPopup {
             }
 
             console.log('Sending n8n request to content script...');
+
+            // Inject the content script on demand if it isn't loaded (SPA navigation)
+            await this.ensureContentScriptLoaded(tabs[0]);
 
             // Send profile data to n8n via content script
             const response = await this.sendMessageToContentScript(tabs[0], "sendToN8n", formData);

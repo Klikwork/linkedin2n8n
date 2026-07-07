@@ -1,0 +1,41 @@
+{
+  "personName": "Jane Doe",
+  "personBlurb": "I build web platforms and love automating workflows with n8n. Passionate about clean data pipelines.",
+  "experience": [
+    {
+      "company": "Acme Corp",
+      "positions": [
+        {
+          "title": "Senior Developer",
+          "employmentType": "Full-time",
+          "duration": "Jan 2020 - Present · 6 yrs 7 mos",
+          "location": "Amsterdam, North Holland, Netherlands",
+          "description": "Leading the platform team and building automation pipelines for customer onboarding."
+        }
+      ]
+    },
+    {
+      "company": "Globex",
+      "totalDuration": "Full-time · 3 yrs 3 mos",
+      "positions": [
+        {
+          "title": "Team Lead",
+          "duration": "Mar 2018 - Dec 2019 · 1 yr 10 mos"
+        },
+        {
+          "title": "Developer",
+          "duration": "Oct 2016 - Mar 2018 · 1 yr 6 mos"
+        }
+      ]
+    }
+  ],
+  "education": [
+    {
+      "university": "University of Amsterdam",
+      "subject": "MSc, Computer Science"
+    }
+  ],
+  "company": "Acme Corp",
+  "job": "Senior Developer",
+  "linkedinUrl": "https://www.linkedin.com/in/test-profile/"
+}

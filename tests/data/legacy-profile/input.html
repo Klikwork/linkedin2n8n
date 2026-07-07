@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<!-- Fixture mimicking LinkedIn's legacy profile layout:
+     anchor div + heading + content siblings inside a section, ul > li entries,
+     t-bold/t-14 utility classes, aria-hidden + visually-hidden text pairs. -->
+<html>
+<body>
+<main>
+  <section class="artdeco-card">
+    <div>
+      <h1>John Smith</h1>
+      <div class="text-body-medium">Product Manager at Initech</div>
+    </div>
+  </section>
+
+  <section class="artdeco-card pv-profile-card">
+    <div id="about" class="pv-profile-card__anchor"></div>
+    <div><h2><span aria-hidden="true">About</span><span class="visually-hidden">About</span></h2></div>
+    <div>
+      <div class="display-flex ph5 pv3">
+        <div class="inline-show-more-text inline-show-more-text--is-collapsed">
+          <span aria-hidden="true">Product manager focused on B2B SaaS and workflow automation.</span>
+          <span class="visually-hidden">Product manager focused on B2B SaaS and workflow automation.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="artdeco-card pv-profile-card">
+    <div id="experience" class="pv-profile-card__anchor"></div>
+    <div><h2><span aria-hidden="true">Experience</span><span class="visually-hidden">Experience</span></h2></div>
+    <div>
+      <ul>
+        <li class="artdeco-list__item">
+          <div>
+            <div><a href="#"><img alt="" src=""></a></div>
+            <div>
+              <div>
+                <div class="t-bold"><span aria-hidden="true">Product Manager</span><span class="visually-hidden">Product Manager</span></div>
+                <span class="t-14 t-normal"><span aria-hidden="true">Initech · Full-time</span><span class="visually-hidden">Initech · Full-time</span></span>
+                <span class="t-14 t-normal t-black--light"><span aria-hidden="true">Feb 2021 - Present · 5 yrs 6 mos</span><span class="visually-hidden">Feb 2021 - Present · 5 yrs 6 mos</span></span>
+                <span class="t-14 t-normal t-black--light"><span aria-hidden="true">Utrecht, Netherlands</span><span class="visually-hidden">Utrecht, Netherlands</span></span>
+              </div>
+              <div class="pvs-entity__sub-components">
+                <ul>
+                  <li>
+                    <div class="inline-show-more-text inline-show-more-text--is-collapsed">
+                      <span aria-hidden="true">Owning the roadmap for the integrations platform.</span>
+                      <span class="visually-hidden">Owning the roadmap for the integrations platform.</span>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </li>
+        <li class="artdeco-list__item">
+          <div>
+            <div><a href="#"><img alt="" src=""></a></div>
+            <div>
+              <div>
+                <div class="t-bold"><span aria-hidden="true">Umbrella Group</span><span class="visually-hidden">Umbrella Group</span></div>
+                <span class="t-14 t-normal"><span aria-hidden="true">Full-time · 4 yrs 2 mos</span><span class="visually-hidden">Full-time · 4 yrs 2 mos</span></span>
+              </div>
+              <div>
+                <ul>
+                  <li>
+                    <div>
+                      <div></div>
+                      <div>
+                        <div class="t-bold"><span aria-hidden="true">Senior Analyst</span><span class="visually-hidden">Senior Analyst</span></div>
+                        <span class="t-14 t-normal t-black--light"><span aria-hidden="true">Jan 2019 - Feb 2021 · 2 yrs 2 mos</span><span class="visually-hidden">Jan 2019 - Feb 2021 · 2 yrs 2 mos</span></span>
+                      </div>
+                    </div>
+                  </li>
+                  <li>
+                    <div>
+                      <div></div>
+                      <div>
+                        <div class="t-bold"><span aria-hidden="true">Analyst</span><span class="visually-hidden">Analyst</span></div>
+                        <span class="t-14 t-normal t-black--light"><span aria-hidden="true">Jan 2017 - Jan 2019 · 2 yrs 1 mo</span><span class="visually-hidden">Jan 2017 - Jan 2019 · 2 yrs 1 mo</span></span>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="artdeco-card pv-profile-card">
+    <div id="education" class="pv-profile-card__anchor"></div>
+    <div><h2><span aria-hidden="true">Education</span><span class="visually-hidden">Education</span></h2></div>
+    <div>
+      <ul>
+        <li class="artdeco-list__item">
+          <div>
+            <div><a href="#"><img alt="" src=""></a></div>
+            <div>
+              <div>
+                <div class="t-bold"><span aria-hidden="true">Delft University of Technology</span><span class="visually-hidden">Delft University of Technology</span></div>
+                <span class="t-14 t-normal"><span aria-hidden="true">BSc, Industrial Engineering</span><span class="visually-hidden">BSc, Industrial Engineering</span></span>
+                <span class="t-14 t-normal t-black--light"><span aria-hidden="true">2012 - 2016</span><span class="visually-hidden">2012 - 2016</span></span>
+              </div>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+</main>
+</body>
+</html>

@@ -100,8 +100,23 @@ function extractSalesNavigatorEducationData() {
   }
 }
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+/**
+ * Main message listener for handling requests from popup
+ * Guarded so on-demand injection from the popup never registers it twice
+ */
+if (!window.__linkedin2n8nSalesLoaded) {
+  window.__linkedin2n8nSalesLoaded = true;
+  chrome.runtime.onMessage.addListener(salesMessageListener);
+}
+
+function salesMessageListener(request, sender, sendResponse) {
   console.log('Sales script received:', request.action);
+
+  // Liveness check used by the popup before falling back to on-demand injection
+  if (request.action === "ping") {
+    sendResponse({ pong: true });
+    return;
+  }
 
   if (request.action === "getProfileData") {
     try {
@@ -135,4 +150,4 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     return true;
   }
-});
+}

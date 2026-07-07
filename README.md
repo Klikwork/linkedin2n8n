@@ -52,6 +52,15 @@ The profile data will be posted to your n8n webhook in JSON format.
 
 ---
 
+## 🩺 Troubleshooting
+
+- **"Could not read any profile data"** — scroll through the profile once so LinkedIn renders all sections, then click Send again.
+- **Nothing happens / connection errors** — reload the extension at `chrome://extensions/` after updating it (click the ↻ refresh icon on the extension card), then reload the LinkedIn tab.
+- **Webhook errors (HTTP 404)** — in n8n, a *test* webhook URL only works for one call while the workflow editor is listening. Use the **production** webhook URL and make sure the workflow is **activated**.
+- LinkedIn changes its page markup regularly. As of v1.1.0 the extension supports both the classic and the 2025+ profile layouts; if extraction breaks again, save the profile page HTML into `tests/data/<case>/input.html` and run `npm test` to debug.
+
+---
+
 ## 🔒 Privacy
 
 - Your webhook URL is stored locally in Chrome, never sent to third parties

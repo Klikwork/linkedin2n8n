@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<!-- Fixture mimicking LinkedIn's 2025+ profile layout:
+     sections marked with data-view-name="profile-card", entries with
+     data-view-name="profile-component-entity", every visible string rendered
+     twice (span[aria-hidden="true"] + span.visually-hidden), no t-bold/t-14
+     utility classes. -->
+<html>
+<body>
+<main>
+  <section data-view-name="profile-card">
+    <div>
+      <h1>Jane Doe</h1>
+      <div>Senior Developer at Acme Corp</div>
+    </div>
+  </section>
+
+  <section data-view-name="profile-card">
+    <div id="about" class="pv-profile-card__anchor"></div>
+    <div>
+      <h2><span aria-hidden="true">About</span><span class="visually-hidden">About</span></h2>
+    </div>
+    <div>
+      <div class="inline-show-more-text">
+        <span aria-hidden="true">I build web platforms and love automating workflows with n8n. Passionate about clean data pipelines.</span>
+        <span class="visually-hidden">I build web platforms and love automating workflows with n8n. Passionate about clean data pipelines.</span>
+      </div>
+    </div>
+  </section>
+
+  <section data-view-name="profile-card">
+    <div id="experience" class="pv-profile-card__anchor"></div>
+    <div>
+      <h2><span aria-hidden="true">Experience</span><span class="visually-hidden">Experience</span></h2>
+    </div>
+    <div>
+      <div data-view-name="profile-component-entity">
+        <div><a href="#"><img alt="" src=""></a></div>
+        <div>
+          <div>
+            <div><span aria-hidden="true">Senior Developer</span><span class="visually-hidden">Senior Developer</span></div>
+            <span><span aria-hidden="true">Acme Corp · Full-time</span><span class="visually-hidden">Acme Corp · Full-time</span></span>
+            <span><span aria-hidden="true">Jan 2020 - Present · 6 yrs 7 mos</span><span class="visually-hidden">Jan 2020 - Present · 6 yrs 7 mos</span></span>
+            <span><span aria-hidden="true">Amsterdam, North Holland, Netherlands</span><span class="visually-hidden">Amsterdam, North Holland, Netherlands</span></span>
+          </div>
+          <ul>
+            <li>
+              <div class="inline-show-more-text">
+                <span aria-hidden="true">Leading the platform team and building automation pipelines for customer onboarding.</span>
+                <span class="visually-hidden">Leading the platform team and building automation pipelines for customer onboarding.</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div data-view-name="profile-component-entity">
+        <div><a href="#"><img alt="" src=""></a></div>
+        <div>
+          <div>
+            <div><span aria-hidden="true">Globex</span><span class="visually-hidden">Globex</span></div>
+            <span><span aria-hidden="true">Full-time · 3 yrs 3 mos</span><span class="visually-hidden">Full-time · 3 yrs 3 mos</span></span>
+            <span><span aria-hidden="true">Rotterdam, Netherlands</span><span class="visually-hidden">Rotterdam, Netherlands</span></span>
+          </div>
+          <ul>
+            <li>
+              <div data-view-name="profile-component-entity">
+                <div>
+                  <div><span aria-hidden="true">Team Lead</span><span class="visually-hidden">Team Lead</span></div>
+                  <span><span aria-hidden="true">Mar 2018 - Dec 2019 · 1 yr 10 mos</span><span class="visually-hidden">Mar 2018 - Dec 2019 · 1 yr 10 mos</span></span>
+                </div>
+              </div>
+            </li>
+            <li>
+              <div data-view-name="profile-component-entity">
+                <div>
+                  <div><span aria-hidden="true">Developer</span><span class="visually-hidden">Developer</span></div>
+                  <span><span aria-hidden="true">Oct 2016 - Mar 2018 · 1 yr 6 mos</span><span class="visually-hidden">Oct 2016 - Mar 2018 · 1 yr 6 mos</span></span>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-view-name="profile-card">
+    <div id="education" class="pv-profile-card__anchor"></div>
+    <div>
+      <h2><span aria-hidden="true">Education</span><span class="visually-hidden">Education</span></h2>
+    </div>
+    <div>
+      <div data-view-name="profile-component-entity">
+        <div><a href="#"><img alt="" src=""></a></div>
+        <div>
+          <div>
+            <div><span aria-hidden="true">University of Amsterdam</span><span class="visually-hidden">University of Amsterdam</span></div>
+            <span><span aria-hidden="true">MSc, Computer Science</span><span class="visually-hidden">MSc, Computer Science</span></span>
+            <span><span aria-hidden="true">2010 - 2014</span><span class="visually-hidden">2010 - 2014</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

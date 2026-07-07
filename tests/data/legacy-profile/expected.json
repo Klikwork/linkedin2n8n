@@ -1,0 +1,41 @@
+{
+  "personName": "John Smith",
+  "personBlurb": "Product manager focused on B2B SaaS and workflow automation.",
+  "experience": [
+    {
+      "company": "Initech",
+      "positions": [
+        {
+          "title": "Product Manager",
+          "employmentType": "Full-time",
+          "duration": "Feb 2021 - Present · 5 yrs 6 mos",
+          "location": "Utrecht, Netherlands",
+          "description": "Owning the roadmap for the integrations platform."
+        }
+      ]
+    },
+    {
+      "company": "Umbrella Group",
+      "totalDuration": "Full-time · 4 yrs 2 mos",
+      "positions": [
+        {
+          "title": "Senior Analyst",
+          "duration": "Jan 2019 - Feb 2021 · 2 yrs 2 mos"
+        },
+        {
+          "title": "Analyst",
+          "duration": "Jan 2017 - Jan 2019 · 2 yrs 1 mo"
+        }
+      ]
+    }
+  ],
+  "education": [
+    {
+      "university": "Delft University of Technology",
+      "subject": "BSc, Industrial Engineering"
+    }
+  ],
+  "company": "Initech",
+  "job": "Product Manager",
+  "linkedinUrl": "https://www.linkedin.com/in/test-profile/"
+}
